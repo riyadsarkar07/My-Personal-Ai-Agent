@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --background: #07070c;
+  --surface: #0e0e18;
+  --surface-2: #151526;
+  --foreground: #f5f3ff;
+  --muted: #a5a3b8;
+  --border: #2a2740;
+  --primary: #7c3aed;
+  --primary-hover: #8b5cf6;
+  --on-primary: #ffffff;
+  --secondary: #a78bfa;
+  --accent: #0891b2;
+  --destructive: #dc2626;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --ring: #7c3aed;
+  --sidebar: #0a0a12;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.glow-card {
+  box-shadow: 0 0 0 1px var(--border), 0 0 40px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.grid-bg {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--primary) 28%, transparent), transparent),
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+}

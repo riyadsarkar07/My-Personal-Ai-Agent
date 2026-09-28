@@ -1,0 +1,38 @@
+{
+  "name": "nexus-agent-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Universal Gemini-powered AI Agent Platform with a secure REST API",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0 --port 3000",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts packages/agent-sdk/src/index.test.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "clsx": "^2.1.1",
+    "jose": "^6.1.0",
+    "lucide-react": "^0.544.0",
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "recharts": "^3.2.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.5",
+    "typescript": "^5"
+  }
+}
