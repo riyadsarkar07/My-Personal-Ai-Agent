@@ -47,7 +47,7 @@ tests/                    Unit tests
 1. Copy `.env.example` to `.env.local` and fill in at least one provider key plus (optionally) Supabase values.
 2. `npm install`
 3. `npm run dev`
-4. Sign in with `ADMIN_EMAIL` and password `ChangeMe123!` (change it immediately).
+4. Sign in with your Supabase Auth email and password (or, without Supabase, `ADMIN_EMAIL` / `ChangeMe123!`).
 5. Create a project, generate a Nexus API key, and call `POST /api/v1/chat`.
 
 Without Supabase credentials the platform runs on a process-local store so you can develop the API and dashboard immediately. Use Supabase for production.

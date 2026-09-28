@@ -2,6 +2,7 @@ import { createServiceClient } from "./supabase/server";
 import { generateId, hashApiKey, hashPassword } from "./crypto";
 import { getEnv } from "./env";
 import { nowIso, slugify } from "./utils";
+import { isPlatformAdmin } from "./roles";
 import type {
   Agent,
   AgentTool,
@@ -71,9 +72,13 @@ export function usingSupabase(): boolean {
 export async function seedDefaults(): Promise<void> {
   if (seeded) return;
   seeded = true;
+  if (usingSupabase()) return;
   const env = getEnv();
   const existing = await getProfileByEmail(env.ADMIN_EMAIL);
-  if (existing) return;
+  if (existing) {
+    await ensureDefaultProject(existing);
+    return;
+  }
 
   const admin: Profile = {
     id: generateId("usr"),
@@ -85,9 +90,15 @@ export async function seedDefaults(): Promise<void> {
     updated_at: nowIso(),
   };
   await upsertProfile(admin);
+  await ensureDefaultProject(admin);
+}
 
+async function ensureDefaultProject(owner: Profile): Promise<Project | null> {
+  const existing = await listProjectsForUser(owner.id);
+  if (existing.length) return existing[0];
+  const env = getEnv();
   const project = await createProjectRecord({
-    owner_id: admin.id,
+    owner_id: owner.id,
     name: "Default Project",
     description: "Starter project for your first AI agent.",
     rate_limit_rpm: 60,
@@ -96,7 +107,6 @@ export async function seedDefaults(): Promise<void> {
     status: "active",
     allowed_origins: [],
   });
-
   await createAgentRecord({
     project_id: project.id,
     name: "General Assistant",
@@ -111,6 +121,12 @@ export async function seedDefaults(): Promise<void> {
     tools_enabled: false,
     status: "active",
   });
+  return project;
+}
+
+export async function ensureOwnerWorkspace(profile: Profile): Promise<void> {
+  if (!isPlatformAdmin(profile)) return;
+  await ensureDefaultProject(profile);
 }
 
 async function sb() {
@@ -146,6 +162,36 @@ export async function getProfileById(id: string): Promise<Profile | null> {
     return (data as Profile | null) ?? null;
   }
   return memory.profiles.find((p) => p.id === id) ?? null;
+}
+
+export async function updateProfileRole(id: string, role: Profile["role"]): Promise<Profile | null> {
+  const existing = await getProfileById(id);
+  if (!existing) return null;
+  const next: Profile = { ...existing, role, updated_at: nowIso() };
+  return upsertProfile(next);
+}
+
+export async function syncAuthUserToProfile(input: {
+  id: string;
+  email: string;
+  fullName?: string;
+  role?: Profile["role"];
+  passwordHash?: string | null;
+}): Promise<Profile> {
+  const email = input.email.toLowerCase();
+  const existingById = await getProfileById(input.id);
+  const existingByEmail = existingById ? null : await getProfileByEmail(email);
+  const existing = existingById ?? existingByEmail;
+  const profile: Profile = {
+    id: existing?.id ?? input.id,
+    email,
+    full_name: input.fullName || existing?.full_name || email.split("@")[0] || "User",
+    role: input.role ?? existing?.role ?? "member",
+    password_hash: input.passwordHash === undefined ? existing?.password_hash ?? null : input.passwordHash,
+    created_at: existing?.created_at ?? nowIso(),
+    updated_at: nowIso(),
+  };
+  return upsertProfile(profile);
 }
 
 export async function listProfiles(): Promise<Profile[]> {

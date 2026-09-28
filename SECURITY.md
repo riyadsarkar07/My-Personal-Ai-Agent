@@ -13,7 +13,8 @@
 
 - Public API: hashed API keys, status + expiry checks, permission scopes.
 - Dashboard: signed HTTP-only JWT cookies (`jose` HS256).
-- First-admin initialization uses `ADMIN_EMAIL`.
+- When Supabase is configured, login and signup verify credentials with Supabase Auth, then sync a `profiles` row.
+- First-admin initialization uses server-only `ADMIN_EMAIL` / `ADMIN_USER_ID`. The matching Auth user is promoted to `owner`; other users stay `member`.
 
 ## Authorization
 

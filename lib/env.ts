@@ -15,6 +15,7 @@ function requiredNames() {
     SUPABASE_SERVICE_ROLE_KEY: optional("SUPABASE_SERVICE_ROLE_KEY"),
     APP_URL: optional("APP_URL", "http://localhost:3000"),
     ADMIN_EMAIL: optional("ADMIN_EMAIL", "admin@localhost"),
+    ADMIN_USER_ID: optional("ADMIN_USER_ID"),
     API_KEY_HASH_SECRET: optional("API_KEY_HASH_SECRET", "dev-only-change-me"),
     SESSION_SECRET: optional("SESSION_SECRET") || optional("API_KEY_HASH_SECRET", "dev-only-change-me"),
     CREDENTIAL_ENCRYPTION_KEY: optional("CREDENTIAL_ENCRYPTION_KEY"),
@@ -25,14 +26,18 @@ export function getEnv() {
   return requiredNames();
 }
 
-export function isSupabaseConfigured(): boolean {
+export function isSupabaseAuthConfigured(): boolean {
   const env = getEnv();
   return Boolean(
     env.NEXT_PUBLIC_SUPABASE_URL &&
       env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      env.SUPABASE_SERVICE_ROLE_KEY &&
       env.NEXT_PUBLIC_SUPABASE_URL.startsWith("http"),
   );
+}
+
+export function isSupabaseConfigured(): boolean {
+  const env = getEnv();
+  return Boolean(isSupabaseAuthConfigured() && env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 export function isGeminiConfigured(): boolean {

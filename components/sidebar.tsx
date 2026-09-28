@@ -37,10 +37,11 @@ const NAV = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const items = isAdmin ? NAV : NAV.filter((item) => item.href !== "/dashboard/providers");
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -54,7 +55,7 @@ export function Sidebar() {
         <span className="font-semibold tracking-tight">Nexus Agent</span>
       </Link>
       <nav className="flex-1 space-y-1 px-3">
-        {NAV.map((item) => {
+        {items.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
           return (

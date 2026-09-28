@@ -25,7 +25,7 @@ Required for a usable production chat endpoint:
 
 - at least one of `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`
 - `API_KEY_HASH_SECRET`
-- `ADMIN_EMAIL`
+- `ADMIN_EMAIL` (the existing Supabase Auth user that should be owner)
 - `APP_URL`
 
 Recommended:
@@ -55,7 +55,7 @@ curl https://your-app.vercel.app/api/v1/health
 
 Then from the dashboard:
 
-1. Sign in as `ADMIN_EMAIL`
+1. Sign in with the Supabase Auth account matching `ADMIN_EMAIL`
 2. Add provider keys under Providers (or rely on env vars)
 3. Create a project
 4. Generate a Nexus API key (copy it once)

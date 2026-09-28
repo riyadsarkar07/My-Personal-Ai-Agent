@@ -1,10 +1,11 @@
-import { registerUser } from "@/lib/auth";
+import { bootstrapPrimaryAdmin, registerUser } from "@/lib/auth";
 import { registerSchema } from "@/lib/schemas";
 import { setSessionCookie, signSession } from "@/lib/session";
 import { jsonError, jsonOk, readJsonLimited } from "@/lib/utils";
 
 export async function POST(request: Request) {
   try {
+    await bootstrapPrimaryAdmin();
     const raw = await readJsonLimited<unknown>(request);
     const parsed = registerSchema.safeParse(raw);
     if (!parsed.success) return jsonError("Invalid registration payload", 422);

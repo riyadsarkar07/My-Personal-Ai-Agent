@@ -1,10 +1,11 @@
-import { authenticateUser } from "@/lib/auth";
+import { authenticateUser, bootstrapPrimaryAdmin } from "@/lib/auth";
 import { loginSchema } from "@/lib/schemas";
 import { setSessionCookie, signSession } from "@/lib/session";
 import { jsonError, jsonOk, readJsonLimited } from "@/lib/utils";
 
 export async function POST(request: Request) {
   try {
+    await bootstrapPrimaryAdmin();
     const raw = await readJsonLimited<unknown>(request);
     const parsed = loginSchema.safeParse(raw);
     if (!parsed.success) return jsonError("Invalid credentials payload", 422);

@@ -1,4 +1,4 @@
-import { requireDashboardUser } from "@/lib/dashboard-auth";
+import { requirePlatformAdmin } from "@/lib/dashboard-auth";
 import { getAdapter } from "@/lib/ai/providers";
 import {
   decryptCredential,
@@ -12,7 +12,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, { params }: Params) {
   const { id } = await params;
-  const auth = await requireDashboardUser();
+  const auth = await requirePlatformAdmin();
   if ("response" in auth) return auth.response;
   const existing = await getProviderCredential(id);
   if (!existing) return jsonError("Credential not found", 404);

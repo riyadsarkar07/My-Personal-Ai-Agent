@@ -79,8 +79,16 @@ export const memorySchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3)
+  .max(160)
+  .regex(/^[^\s@]+@[^\s@]+$/, "Invalid email");
+
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: emailSchema,
   password: z.string().min(8).max(128),
 });
 

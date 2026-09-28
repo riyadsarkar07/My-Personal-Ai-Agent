@@ -33,7 +33,8 @@ Open http://localhost:3000
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | Production | Anon key, RLS enforced |
 | SUPABASE_SERVICE_ROLE_KEY | Production | Server-only, never expose |
 | APP_URL | Yes | Canonical origin |
-| ADMIN_EMAIL | Yes | First owner account |
+| ADMIN_EMAIL | Yes | Email of the existing Supabase Auth user that should be owner |
+| ADMIN_USER_ID | No | Supabase Auth UUID for that owner account |
 | API_KEY_HASH_SECRET | Yes | HMAC secret for Nexus API keys |
 | CREDENTIAL_ENCRYPTION_KEY | Recommended | AES-256-GCM for stored provider keys |
 | SESSION_SECRET | No | Falls back to `API_KEY_HASH_SECRET` |
@@ -65,14 +66,18 @@ Row Level Security is enabled. The Next.js server uses the service role internal
 
 ## First admin
 
-On first boot the platform seeds:
+Set `ADMIN_EMAIL` to the address of the existing Supabase Auth user that should own the platform. Optionally set `ADMIN_USER_ID` to that user's Supabase Auth UUID.
 
-- a profile for `ADMIN_EMAIL`
-- password `ChangeMe123!`
-- a default project
-- a general-purpose agent with catalog failover models
+On boot and at login the server:
 
-Sign in at `/login`, then change the password before production.
+- authenticates against Supabase Auth when it is configured
+- creates or updates a `profiles` row for that Auth user
+- promotes only the matching account to `owner`
+- creates a default project and agent for that owner if none exist
+
+Without Supabase credentials the local fallback still seeds `ADMIN_EMAIL` with password `ChangeMe123!` for development. Change it immediately.
+
+Users cannot grant themselves the admin role from the dashboard.
 
 ## Verify
 

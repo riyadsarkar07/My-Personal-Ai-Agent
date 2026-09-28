@@ -1,12 +1,12 @@
+import { bootstrapPrimaryAdmin, resolveSessionProfile } from "@/lib/auth";
 import { getSession } from "@/lib/session";
-import { getProfileById, seedDefaults } from "@/lib/store";
 import { jsonError, jsonOk } from "@/lib/utils";
 
 export async function GET() {
-  await seedDefaults();
+  await bootstrapPrimaryAdmin();
   const session = await getSession();
   if (!session) return jsonError("Unauthorized", 401);
-  const profile = await getProfileById(session.sub);
+  const profile = await resolveSessionProfile(session.sub);
   if (!profile) return jsonError("Unauthorized", 401);
   return jsonOk({
     id: profile.id,

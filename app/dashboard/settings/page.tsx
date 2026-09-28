@@ -1,12 +1,32 @@
+import { bootstrapPrimaryAdmin, resolveSessionProfile } from "@/lib/auth";
 import { configuredProviders, getEnv, isSupabaseConfigured } from "@/lib/env";
+import { getSession } from "@/lib/session";
 import { Card } from "@/components/ui";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await bootstrapPrimaryAdmin();
   const env = getEnv();
   const providers = configuredProviders();
+  const session = await getSession();
+  const profile = session ? await resolveSessionProfile(session.sub) : null;
+  const email = profile?.email ?? session?.email ?? "Unknown";
+  const role = profile?.role ?? session?.role ?? "member";
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <h1 className="text-2xl font-semibold">Settings</h1>
+      <Card>
+        <h2 className="font-medium">Account</h2>
+        <dl className="mt-4 space-y-3 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted">Signed in as</dt>
+            <dd>{email}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted">Role</dt>
+            <dd className="capitalize">{role}</dd>
+          </div>
+        </dl>
+      </Card>
       <Card>
         <h2 className="font-medium">Runtime</h2>
         <dl className="mt-4 space-y-3 text-sm">
