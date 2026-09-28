@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="grid-bg flex min-h-dvh items-center justify-center px-4">
       <form onSubmit={onSubmit} className="glow-card w-full max-w-md rounded-2xl bg-surface p-8">
         <h1 className="text-2xl font-semibold">Sign in</h1>
-        <p className="mt-1 text-sm text-muted">Sign in with the email and password for your Nexus account.</p>
+        <p className="mt-1 text-sm text-muted">Use the same credentials as your Nexus account.</p>
         <div className="mt-6">
           <Label htmlFor="email">Email</Label>
           <Input id="email" name="email" type="email" autoComplete="email" required />

@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/dashboard-auth";
+import { requireAdmin } from "@/lib/dashboard-auth";
 import { providerCredentialSchema } from "@/lib/schemas";
 import {
   createProviderCredential,
@@ -10,7 +10,7 @@ import { CATALOG_MODELS, PROVIDER_IDS, PROVIDER_LABELS } from "@/lib/ai/catalog"
 import { jsonError, jsonOk, readJsonLimited } from "@/lib/utils";
 
 export async function GET() {
-  const auth = await requirePlatformAdmin();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const credentials = (await listProviderCredentials()).map(publicCredential);
   const env = configuredProviders();
@@ -27,7 +27,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requirePlatformAdmin();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const raw = await readJsonLimited<unknown>(request);
   const parsed = providerCredentialSchema.safeParse(raw);

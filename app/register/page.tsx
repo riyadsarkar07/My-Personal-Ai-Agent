@@ -38,7 +38,7 @@ export default function RegisterPage() {
     <div className="grid-bg flex min-h-dvh items-center justify-center px-4">
       <form onSubmit={onSubmit} className="glow-card w-full max-w-md rounded-2xl bg-surface p-8">
         <h1 className="text-2xl font-semibold">Create account</h1>
-        <p className="mt-1 text-sm text-muted">Create an account to access your projects and agents.</p>
+        <p className="mt-1 text-sm text-muted">Creates a member workspace. Admin access is assigned server-side.</p>
         <div className="mt-6">
           <Label htmlFor="fullName">Full name</Label>
           <Input id="fullName" name="fullName" required />

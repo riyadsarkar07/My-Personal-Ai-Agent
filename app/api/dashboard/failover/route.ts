@@ -1,9 +1,9 @@
-import { requireDashboardUser, requireProjectAccess } from "@/lib/dashboard-auth";
+import { requireAdmin, requireProjectAccess } from "@/lib/dashboard-auth";
 import { listFailoverLogs, listProjectsForUser } from "@/lib/store";
 import { jsonOk } from "@/lib/utils";
 
 export async function GET(request: Request) {
-  const auth = await requireDashboardUser();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const projectId = new URL(request.url).searchParams.get("projectId");
   if (projectId) {

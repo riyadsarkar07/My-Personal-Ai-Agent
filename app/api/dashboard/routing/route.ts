@@ -1,10 +1,10 @@
-import { requireDashboardUser, requireProjectAccess } from "@/lib/dashboard-auth";
+import { requireAdmin, requireProjectAccess } from "@/lib/dashboard-auth";
 import { routingPolicySchema } from "@/lib/schemas";
 import { createRoutingPolicy, listRoutingPolicies } from "@/lib/store";
 import { jsonError, jsonOk, readJsonLimited } from "@/lib/utils";
 
 export async function GET(request: Request) {
-  const auth = await requireDashboardUser();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const projectId = new URL(request.url).searchParams.get("projectId");
   if (projectId) await requireProjectAccess(auth.user.id, projectId);
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireDashboardUser();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const raw = await readJsonLimited<unknown>(request);
   const parsed = routingPolicySchema.safeParse(raw);

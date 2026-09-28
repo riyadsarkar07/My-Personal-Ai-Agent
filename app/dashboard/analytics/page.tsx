@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/ui";
+import { useRealtimeTable } from "@/hooks/use-realtime";
 import { formatNumber } from "@/lib/utils";
 import type { UsageLog } from "@/lib/types";
 
 export default function AnalyticsPage() {
   const [logs, setLogs] = useState<UsageLog[]>([]);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetch("/api/dashboard/usage")
       .then((r) => r.json())
       .then((j) => setLogs(j.data ?? []));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+  useRealtimeTable("usage_logs", load);
 
   const totals = logs.reduce(
     (acc, log) => {

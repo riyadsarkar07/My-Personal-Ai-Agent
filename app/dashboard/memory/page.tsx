@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Button, Card, Input, Label, Textarea } from "@/components/ui";
+import { useRealtimeTable } from "@/hooks/use-realtime";
 import type { Agent, MemoryRecord, Project } from "@/lib/types";
 
 export default function MemoryPage() {
@@ -9,7 +10,7 @@ export default function MemoryPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
 
-  async function load() {
+  const load = useCallback(async () => {
     const [m, p, a] = await Promise.all([
       fetch("/api/dashboard/memories"),
       fetch("/api/dashboard/projects"),
@@ -18,7 +19,7 @@ export default function MemoryPage() {
     setRows((await m.json()).data ?? []);
     setProjects((await p.json()).data ?? []);
     setAgents((await a.json()).data ?? []);
-  }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +40,7 @@ export default function MemoryPage() {
       cancelled = true;
     };
   }, []);
+  useRealtimeTable("memories", load);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

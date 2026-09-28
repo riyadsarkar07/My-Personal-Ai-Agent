@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Activity, Bot, KeyRound, MessageSquare } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/ui";
+import { useRealtimeTable } from "@/hooks/use-realtime";
 import { formatNumber } from "@/lib/utils";
 
 type Overview = {
@@ -26,12 +27,18 @@ type Overview = {
 export default function OverviewPage() {
   const [data, setData] = useState<Overview | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetch("/api/dashboard/overview")
       .then((r) => r.json())
       .then((j) => setData(j.data))
       .catch(() => setData(null));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+  useRealtimeTable("usage_logs", load);
+  useRealtimeTable("conversations", load);
 
   const chart = (data?.recentUsage ?? [])
     .slice()

@@ -18,34 +18,38 @@ import {
   Server,
   Brain,
   Route,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { ADMIN_NAV, USER_NAV } from "@/lib/nav";
 
-const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
-  { href: "/dashboard/agents", label: "Agents", icon: Bot },
-  { href: "/dashboard/playground", label: "Playground", icon: PlayCircle },
-  { href: "/dashboard/keys", label: "API Keys", icon: KeyRound },
-  { href: "/dashboard/conversations", label: "Conversations", icon: MessageSquare },
-  { href: "/dashboard/analytics", label: "Analytics", icon: Activity },
-  { href: "/dashboard/providers", label: "Providers", icon: Server },
-  { href: "/dashboard/routing", label: "Routing", icon: Route },
-  { href: "/dashboard/memory", label: "Memory", icon: Brain },
-  { href: "/dashboard/docs", label: "Documentation", icon: BookOpen },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
+const ICONS = {
+  "/dashboard": LayoutDashboard,
+  "/dashboard/projects": FolderKanban,
+  "/dashboard/agents": Bot,
+  "/dashboard/playground": PlayCircle,
+  "/dashboard/keys": KeyRound,
+  "/dashboard/conversations": MessageSquare,
+  "/dashboard/analytics": Activity,
+  "/dashboard/memory": Brain,
+  "/dashboard/docs": BookOpen,
+  "/dashboard/admin": Users,
+  "/dashboard/providers": Server,
+  "/dashboard/routing": Route,
+  "/dashboard/settings": Settings,
+} as const;
 
-export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function Sidebar({ email, isAdmin }: { email: string; isAdmin: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const items = isAdmin ? NAV : NAV.filter((item) => item.href !== "/dashboard/providers");
+  const items = isAdmin ? [...USER_NAV, ...ADMIN_NAV] : [...USER_NAV];
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
+    router.refresh();
   }
 
   const content = (
@@ -57,7 +61,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
       <nav className="flex-1 space-y-1 px-3">
         {items.map((item) => {
           const active = pathname === item.href;
-          const Icon = item.icon;
+          const Icon = ICONS[item.href as keyof typeof ICONS] ?? LayoutDashboard;
           return (
             <Link
               key={item.href}
@@ -74,6 +78,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
           );
         })}
       </nav>
+      <p className="px-5 pb-2 text-xs text-muted truncate">{email}</p>
       <button
         type="button"
         onClick={logout}

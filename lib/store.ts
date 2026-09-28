@@ -1,8 +1,8 @@
 import { createServiceClient } from "./supabase/server";
 import { generateId, hashApiKey, hashPassword } from "./crypto";
 import { getEnv } from "./env";
+import { isPlatformAdmin } from "./rbac";
 import { nowIso, slugify } from "./utils";
-import { isPlatformAdmin } from "./roles";
 import type {
   Agent,
   AgentTool,
@@ -74,15 +74,19 @@ export async function seedDefaults(): Promise<void> {
   seeded = true;
   if (usingSupabase()) return;
   const env = getEnv();
-  const existing = await getProfileByEmail(env.ADMIN_EMAIL);
+  const designatedId = env.ADMIN_USER_ID.trim();
+  const designatedEmail = env.ADMIN_EMAIL.toLowerCase();
+  const designatedById = designatedId ? await getProfileById(designatedId) : null;
+  const designatedByEmail = await getProfileByEmail(designatedEmail);
+  const existing = designatedById ?? designatedByEmail;
   if (existing) {
     await ensureDefaultProject(existing);
     return;
   }
 
   const admin: Profile = {
-    id: generateId("usr"),
-    email: env.ADMIN_EMAIL.toLowerCase(),
+    id: designatedId || generateId("usr"),
+    email: designatedEmail,
     full_name: "Platform Admin",
     role: "owner",
     password_hash: hashPassword("ChangeMe123!"),
@@ -94,7 +98,7 @@ export async function seedDefaults(): Promise<void> {
 }
 
 async function ensureDefaultProject(owner: Profile): Promise<Project | null> {
-  const existing = await listProjectsForUser(owner.id);
+  const existing = (await listAllProjects()).filter((project) => project.owner_id === owner.id);
   if (existing.length) return existing[0];
   const env = getEnv();
   const project = await createProjectRecord({
@@ -240,7 +244,18 @@ async function insertMember(member: ProjectMember) {
   memory.project_members.push(member);
 }
 
+export async function listAllProjects(): Promise<Project[]> {
+  const client = await sb();
+  if (client) {
+    const { data } = await client.from("projects").select("*").order("created_at", { ascending: false });
+    return (data as Project[]) ?? [];
+  }
+  return clone(memory.projects);
+}
+
 export async function listProjectsForUser(userId: string): Promise<Project[]> {
+  const profile = await getProfileById(userId);
+  if (profile && isPlatformAdmin(profile)) return listAllProjects();
   const client = await sb();
   if (client) {
     const { data: memberships } = await client.from("project_members").select("project_id").eq("user_id", userId);
@@ -278,6 +293,8 @@ export async function updateProjectRecord(id: string, patch: Partial<Project>): 
 }
 
 export async function userCanAccessProject(userId: string, projectId: string): Promise<boolean> {
+  const profile = await getProfileById(userId);
+  if (profile && isPlatformAdmin(profile)) return true;
   const client = await sb();
   if (client) {
     const { data } = await client

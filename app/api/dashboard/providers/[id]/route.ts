@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/dashboard-auth";
+import { requireAdmin } from "@/lib/dashboard-auth";
 import { updateProviderCredentialSchema } from "@/lib/schemas";
 import {
   deleteProviderCredential,
@@ -12,7 +12,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params;
-  const auth = await requirePlatformAdmin();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const existing = await getProviderCredential(id);
   if (!existing) return jsonError("Credential not found", 404);
@@ -25,7 +25,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
 export async function DELETE(_request: Request, { params }: Params) {
   const { id } = await params;
-  const auth = await requirePlatformAdmin();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const existing = await getProviderCredential(id);
   if (!existing) return jsonError("Credential not found", 404);

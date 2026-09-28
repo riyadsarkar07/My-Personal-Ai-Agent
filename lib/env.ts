@@ -26,7 +26,7 @@ export function getEnv() {
   return requiredNames();
 }
 
-export function isSupabaseAuthConfigured(): boolean {
+export function isSupabaseBrowserConfigured(): boolean {
   const env = getEnv();
   return Boolean(
     env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -35,9 +35,13 @@ export function isSupabaseAuthConfigured(): boolean {
   );
 }
 
+export function isSupabaseAuthConfigured(): boolean {
+  return isSupabaseBrowserConfigured();
+}
+
 export function isSupabaseConfigured(): boolean {
   const env = getEnv();
-  return Boolean(isSupabaseAuthConfigured() && env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(isSupabaseBrowserConfigured() && env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 export function isGeminiConfigured(): boolean {

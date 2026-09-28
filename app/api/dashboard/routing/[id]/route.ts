@@ -1,4 +1,4 @@
-import { requireDashboardUser, requireProjectAccess } from "@/lib/dashboard-auth";
+import { requireAdmin, requireProjectAccess } from "@/lib/dashboard-auth";
 import { routingPolicySchema } from "@/lib/schemas";
 import { deleteRoutingPolicy, getRoutingPolicy, updateRoutingPolicy } from "@/lib/store";
 import { jsonError, jsonOk, readJsonLimited } from "@/lib/utils";
@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params;
-  const auth = await requireDashboardUser();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const existing = await getRoutingPolicy(id);
   if (!existing) return jsonError("Routing policy not found", 404);
@@ -27,7 +27,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
 export async function DELETE(_request: Request, { params }: Params) {
   const { id } = await params;
-  const auth = await requireDashboardUser();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const existing = await getRoutingPolicy(id);
   if (!existing) return jsonError("Routing policy not found", 404);

@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/dashboard-auth";
+import { requireAdmin } from "@/lib/dashboard-auth";
 import { getAdapter } from "@/lib/ai/providers";
 import { PROVIDER_IDS, PROVIDER_LABELS } from "@/lib/ai/catalog";
 import { envKeyForProvider } from "@/lib/env";
@@ -6,7 +6,7 @@ import { decryptCredential, listProviderCredentials } from "@/lib/store";
 import { jsonOk } from "@/lib/utils";
 
 export async function GET() {
-  const auth = await requirePlatformAdmin();
+  const auth = await requireAdmin();
   if ("response" in auth) return auth.response;
   const credentials = await listProviderCredentials();
   const health = await Promise.all(

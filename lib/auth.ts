@@ -1,6 +1,6 @@
 import { generateId, hashPassword, verifyPassword } from "./crypto";
 import { getEnv, isSupabaseConfigured } from "./env";
-import { isPlatformAdmin, roleForEmail } from "./roles";
+import { isPlatformAdmin, roleForIdentity } from "./rbac";
 import {
   createAuthUser,
   findAuthUserByEmail,
@@ -21,13 +21,12 @@ import {
 import { nowIso } from "./utils";
 import type { Profile, UserRole } from "./types";
 
+function authError(message: string, status: number) {
+  return Object.assign(new Error(message), { status });
+}
+
 async function promoteConfiguredAdmin(profile: Profile): Promise<Profile> {
-  const env = getEnv();
-  const adminEmail = env.ADMIN_EMAIL.toLowerCase();
-  const adminUserId = env.ADMIN_USER_ID.trim();
-  const matchesEmail = Boolean(adminEmail) && profile.email.toLowerCase() === adminEmail;
-  const matchesId = Boolean(adminUserId) && profile.id === adminUserId;
-  if (!matchesEmail && !matchesId) return profile;
+  if (!isPlatformAdmin(profile)) return profile;
   if (profile.role === "owner") {
     await ensureOwnerWorkspace(profile);
     return profile;
@@ -81,7 +80,7 @@ async function authenticateLocal(email: string, password: string): Promise<Profi
 
 export async function authenticateUser(email: string, password: string): Promise<Profile | null> {
   await seedDefaults();
-  const normalized = email.toLowerCase();
+  const normalized = email.trim().toLowerCase();
 
   if (isSupabaseConfigured()) {
     const authUser = await signInAuthUser(normalized, password);
@@ -108,33 +107,29 @@ export async function authenticateUser(email: string, password: string): Promise
 
 export async function registerUser(input: { email: string; password: string; fullName: string }): Promise<Profile> {
   await seedDefaults();
-  const env = getEnv();
-  const email = input.email.toLowerCase();
+  const email = input.email.trim().toLowerCase();
   const existing = await getProfileByEmail(email);
-  if (existing) {
-    throw Object.assign(new Error("An account with that email already exists"), { status: 409 });
-  }
+  if (existing) throw authError("An account with that email already exists", 409);
 
   if (isSupabaseConfigured()) {
     const already = await findAuthUserByEmail(email);
-    if (already) {
-      throw Object.assign(new Error("An account with that email already exists"), { status: 409 });
-    }
+    if (already) throw authError("An account with that email already exists", 409);
     const authUser = await createAuthUser(input);
     const profile = await syncAuthUserToProfile({
       id: authUser.id,
       email: authUser.email || email,
       fullName: input.fullName,
-      role: roleForEmail(email, env.ADMIN_EMAIL),
+      role: roleForIdentity(authUser.id, email, "member"),
     });
     return promoteConfiguredAdmin(profile);
   }
 
+  const id = generateId("usr");
   const profile: Profile = {
-    id: generateId("usr"),
+    id,
     email,
     full_name: input.fullName,
-    role: roleForEmail(email, env.ADMIN_EMAIL),
+    role: roleForIdentity(id, email, "member"),
     password_hash: hashPassword(input.password),
     created_at: nowIso(),
     updated_at: nowIso(),
@@ -158,6 +153,27 @@ export async function resolveSessionProfile(userId: string): Promise<Profile | n
     }
   }
   if (!profile) return null;
+  return promoteConfiguredAdmin(profile);
+}
+
+export async function syncAuthenticatedProfile(user: {
+  id: string;
+  email?: string | null;
+  user_metadata?: Record<string, unknown> | null;
+}): Promise<Profile | null> {
+  if (!user.email) return null;
+  const metadataName =
+    typeof user.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : typeof user.user_metadata?.fullName === "string"
+        ? user.user_metadata.fullName
+        : null;
+  const profile = await syncAuthUserToProfile({
+    id: user.id,
+    email: user.email,
+    fullName: metadataName ?? undefined,
+    role: roleForIdentity(user.id, user.email, "member"),
+  });
   return promoteConfiguredAdmin(profile);
 }
 

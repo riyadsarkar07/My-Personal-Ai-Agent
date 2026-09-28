@@ -48,6 +48,10 @@ export default async function SettingsPage() {
             <dt className="text-muted">Admin email</dt>
             <dd>{env.ADMIN_EMAIL}</dd>
           </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted">Admin user id</dt>
+            <dd className="font-mono text-xs">{env.ADMIN_USER_ID || "not set"}</dd>
+          </div>
         </dl>
       </Card>
       <Card>

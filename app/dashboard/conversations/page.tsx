@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Card } from "@/components/ui";
+import { useRealtimeTable } from "@/hooks/use-realtime";
 import { relativeTime } from "@/lib/utils";
 import type { Conversation, Message } from "@/lib/types";
 
@@ -9,10 +10,10 @@ export default function ConversationsPage() {
   const [items, setItems] = useState<Conversation[]>([]);
   const [active, setActive] = useState<(Conversation & { messages: Message[] }) | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     const res = await fetch("/api/dashboard/conversations");
     setItems((await res.json()).data ?? []);
-  }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,6 +26,8 @@ export default function ConversationsPage() {
       cancelled = true;
     };
   }, []);
+  useRealtimeTable("conversations", load);
+  useRealtimeTable("messages", load);
 
   async function open(id: string) {
     const res = await fetch(`/api/dashboard/conversations/${id}`);

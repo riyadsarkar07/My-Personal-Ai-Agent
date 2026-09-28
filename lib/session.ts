@@ -1,7 +1,11 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { getEnv } from "./env";
-import type { SessionPayload } from "./types";
+import { getEnv, isSupabaseBrowserConfigured } from "./env";
+import { publicProfile } from "./rbac";
+import { getProfileById, seedDefaults } from "./store";
+import { getSupabaseAuthUser } from "./supabase/session";
+import { syncAuthenticatedProfile } from "./auth";
+import type { Profile, SessionPayload } from "./types";
 
 const COOKIE = "nexus_session";
 
@@ -35,10 +39,23 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  return { sub: user.id, email: user.email, role: user.role };
+}
+
+export async function getCurrentUser(): Promise<Profile | null> {
+  await seedDefaults();
+  if (isSupabaseBrowserConfigured()) {
+    const authUser = await getSupabaseAuthUser();
+    if (authUser) return syncAuthenticatedProfile(authUser);
+  }
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
-  return verifySession(token);
+  const session = await verifySession(token);
+  if (!session) return null;
+  return getProfileById(session.sub);
 }
 
 export async function setSessionCookie(token: string) {
@@ -55,4 +72,8 @@ export async function setSessionCookie(token: string) {
 export async function clearSessionCookie() {
   const jar = await cookies();
   jar.delete(COOKIE);
+}
+
+export function sessionUserPayload(user: Profile) {
+  return publicProfile(user);
 }
