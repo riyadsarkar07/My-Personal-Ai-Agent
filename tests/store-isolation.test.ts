@@ -60,6 +60,7 @@ test("projects cannot read another project's agents or conversations", async () 
     name: "Agent A",
     description: "",
     model: "gemini-2.0-flash",
+    fallback_models: ["gpt-4o-mini"],
     system_instruction: "A",
     temperature: 0.2,
     max_tokens: 256,

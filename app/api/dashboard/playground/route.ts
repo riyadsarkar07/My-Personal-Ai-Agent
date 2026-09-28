@@ -37,6 +37,8 @@ export async function POST(request: Request) {
     agentId: agent.id,
     message: result.text,
     model: result.model,
+    provider: result.provider ?? null,
+    estimatedCostUsd: result.estimatedCostUsd ?? 0,
     usage: {
       promptTokens: result.promptTokens,
       completionTokens: result.completionTokens,

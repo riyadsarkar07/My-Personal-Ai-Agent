@@ -28,6 +28,7 @@ export async function PATCH(request: Request, { params }: Params) {
       name: body.name,
       description: body.description,
       model: body.model,
+      fallback_models: body.fallbackModels,
       system_instruction: body.systemInstruction,
       temperature: body.temperature,
       max_tokens: body.maxTokens,

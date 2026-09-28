@@ -19,13 +19,14 @@ export async function GET() {
   const totals = usage.reduce(
     (acc, log) => {
       acc.requests += 1;
-      acc.tokens += log.prompt_tokens + log.completion_tokens;
-      acc.errors += log.status === "error" ? 1 : 0;
-      acc.latency += log.latency_ms;
-      return acc;
-    },
-    { requests: 0, tokens: 0, errors: 0, latency: 0 },
-  );
+        acc.tokens += log.prompt_tokens + log.completion_tokens;
+        acc.errors += log.status === "error" ? 1 : 0;
+        acc.latency += log.latency_ms;
+        acc.estimatedCostUsd += log.estimated_cost_usd ?? 0;
+        return acc;
+      },
+      { requests: 0, tokens: 0, errors: 0, latency: 0, estimatedCostUsd: 0 },
+    );
   return jsonOk({
     projects: projects.length,
     agents: agents.length,
@@ -34,6 +35,7 @@ export async function GET() {
     requests: totals.requests,
     tokens: totals.tokens,
     errors: totals.errors,
+    estimatedCostUsd: totals.estimatedCostUsd,
     avgLatency: totals.requests ? Math.round(totals.latency / totals.requests) : 0,
     recentUsage: usage.slice(0, 12),
     recentConversations: conversations.slice(0, 6),

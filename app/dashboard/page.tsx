@@ -15,6 +15,7 @@ type Overview = {
   requests: number;
   tokens: number;
   errors: number;
+  estimatedCostUsd?: number;
   avgLatency: number;
   recentUsage: { created_at: string; prompt_tokens: number; completion_tokens: number; status: string }[];
   recentConversations: { id: string; title: string; updated_at: string }[];
@@ -103,6 +104,10 @@ export default function OverviewPage() {
             <div className="flex justify-between">
               <dt className="text-muted">Avg latency</dt>
               <dd className="tabular-nums">{data?.avgLatency ?? 0} ms</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Est. cost</dt>
+              <dd className="tabular-nums">${(data?.estimatedCostUsd ?? 0).toFixed(4)}</dd>
             </div>
           </dl>
           <Link href="/dashboard/playground" className="mt-6 inline-flex text-sm text-secondary hover:underline">

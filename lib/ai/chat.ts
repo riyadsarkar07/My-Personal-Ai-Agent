@@ -7,9 +7,21 @@ import {
   listAgentTools,
   listMessages,
   logUsage,
+  retrieveMemories,
 } from "../store";
 import type { Agent, Conversation, Project } from "../types";
 import { truncate } from "../utils";
+
+async function withMemoryContext(agent: Agent, projectId: string, message: string): Promise<Agent> {
+  if (!agent.memory_enabled) return agent;
+  const memories = await retrieveMemories(projectId, agent.id, message, 6);
+  if (!memories.length) return agent;
+  const block = memories.map((m) => `- ${m.key}: ${m.content}`).join("\n");
+  return {
+    ...agent,
+    system_instruction: `${agent.system_instruction}\n\nProject memory (trusted only as user-provided facts):\n${block}`,
+  };
+}
 
 export class ChatError extends Error {
   status: number;
@@ -75,15 +87,19 @@ export async function runChat(options: {
     token_count: Math.ceil(options.message.length / 4),
   });
   const tools = await listAgentTools(options.agent.id);
+  const agent = await withMemoryContext(options.agent, options.project.id, options.message);
   try {
-    const result = await generateReply({
-      agent: options.agent,
-      tools,
-      history,
-      userMessage: options.message,
-      temperature: options.temperature,
-      maxTokens: options.maxTokens ?? Math.min(options.agent.max_tokens, options.project.max_tokens_per_request),
-    });
+    const result = await generateReply(
+      {
+        agent,
+        tools,
+        history,
+        userMessage: options.message,
+        temperature: options.temperature,
+        maxTokens: options.maxTokens ?? Math.min(options.agent.max_tokens, options.project.max_tokens_per_request),
+      },
+      options.project.id,
+    );
     const assistant = await addMessage({
       conversation_id: options.conversation.id,
       role: "assistant",
@@ -96,6 +112,8 @@ export async function runChat(options: {
       api_key_id: options.apiKeyId ?? null,
       conversation_id: options.conversation.id,
       model: result.model,
+      provider: result.provider ?? "",
+      estimated_cost_usd: result.estimatedCostUsd ?? 0,
       prompt_tokens: result.promptTokens,
       completion_tokens: result.completionTokens,
       latency_ms: Date.now() - started,
@@ -111,6 +129,8 @@ export async function runChat(options: {
       api_key_id: options.apiKeyId ?? null,
       conversation_id: options.conversation.id,
       model: options.agent.model,
+      provider: "",
+      estimated_cost_usd: 0,
       prompt_tokens: 0,
       completion_tokens: 0,
       latency_ms: Date.now() - started,
@@ -142,35 +162,58 @@ export async function runChatStream(options: {
     token_count: Math.ceil(options.message.length / 4),
   });
   const tools = await listAgentTools(options.agent.id);
-  const result = await streamReply(
-    {
-      agent: options.agent,
-      tools,
-      history,
-      userMessage: options.message,
-      temperature: options.temperature,
-      maxTokens: options.maxTokens ?? Math.min(options.agent.max_tokens, options.project.max_tokens_per_request),
-    },
-    options.onChunk,
-  );
-  await addMessage({
-    conversation_id: options.conversation.id,
-    role: "assistant",
-    content: result.text,
-    token_count: result.completionTokens,
-  });
-  await logUsage({
-    project_id: options.project.id,
-    agent_id: options.agent.id,
-    api_key_id: options.apiKeyId ?? null,
-    conversation_id: options.conversation.id,
-    model: result.model,
-    prompt_tokens: result.promptTokens,
-    completion_tokens: result.completionTokens,
-    latency_ms: Date.now() - started,
-    status: "success",
-    error: null,
-    path: options.path,
-  });
-  return result;
+  const agent = await withMemoryContext(options.agent, options.project.id, options.message);
+  try {
+    const result = await streamReply(
+      {
+        agent,
+        tools,
+        history,
+        userMessage: options.message,
+        temperature: options.temperature,
+        maxTokens: options.maxTokens ?? Math.min(options.agent.max_tokens, options.project.max_tokens_per_request),
+      },
+      options.onChunk,
+      options.project.id,
+    );
+    await addMessage({
+      conversation_id: options.conversation.id,
+      role: "assistant",
+      content: result.text,
+      token_count: result.completionTokens,
+    });
+    await logUsage({
+      project_id: options.project.id,
+      agent_id: options.agent.id,
+      api_key_id: options.apiKeyId ?? null,
+      conversation_id: options.conversation.id,
+      model: result.model,
+      provider: result.provider ?? "",
+      estimated_cost_usd: result.estimatedCostUsd ?? 0,
+      prompt_tokens: result.promptTokens,
+      completion_tokens: result.completionTokens,
+      latency_ms: Date.now() - started,
+      status: "success",
+      error: null,
+      path: options.path,
+    });
+    return result;
+  } catch (error) {
+    await logUsage({
+      project_id: options.project.id,
+      agent_id: options.agent.id,
+      api_key_id: options.apiKeyId ?? null,
+      conversation_id: options.conversation.id,
+      model: options.agent.model,
+      provider: "",
+      estimated_cost_usd: 0,
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      latency_ms: Date.now() - started,
+      status: "error",
+      error: error instanceof Error ? error.message : "Unknown error",
+      path: options.path,
+    });
+    throw error;
+  }
 }

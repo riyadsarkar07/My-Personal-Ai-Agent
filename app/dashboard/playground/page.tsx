@@ -110,7 +110,7 @@ export default function PlaygroundPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Playground</h1>
-          <p className="text-sm text-muted">Uses the same Gemini engine as POST /api/v1/chat.</p>
+          <p className="text-sm text-muted">Uses the same multi-provider gateway as POST /api/v1/chat.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex min-h-11 items-center gap-2 text-sm">

@@ -4,8 +4,8 @@ import { ArrowRight, Bot, KeyRound, Layers, Shield, Zap } from "lucide-react";
 const features = [
   {
     icon: Bot,
-    title: "Reusable Gemini agents",
-    body: "Configure personality, model, memory, and tools once. Call the same agent from every product.",
+    title: "Reusable multi-provider agents",
+    body: "Configure personality, model, memory, and tools once. Route across Gemini, OpenAI, Claude, Groq, and OpenRouter.",
   },
   {
     icon: KeyRound,
@@ -25,7 +25,7 @@ const features = [
   {
     icon: Shield,
     title: "Server-side secrets",
-    body: "Gemini keys never leave the server. Prompt-injection guards and sandboxed tools are built in.",
+    body: "Provider keys never leave the server. Prompt-injection guards, encrypted credentials, and sandboxed tools are built in.",
   },
 ];
 
@@ -52,9 +52,9 @@ export default function Home() {
       <section className="mx-auto max-w-4xl px-6 pb-20 pt-16 text-center">
         <p className="mb-4 text-sm font-medium tracking-wide text-secondary">UNIVERSAL AI AGENT PLATFORM</p>
         <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
-          One Gemini agent.
+          One agent.
           <br />
-          Every product.
+          Every provider.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-muted">
           Build a production AI agent once and reuse it across websites, mobile apps, and internal tools through a

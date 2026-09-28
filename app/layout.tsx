@@ -14,9 +14,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus Agent — Universal Gemini AI Platform",
+  title: "Nexus Agent — Multi-provider AI Platform",
   description:
-    "Build one Gemini-powered AI agent and reuse it across websites, apps, and products through a secure REST API.",
+    "Build one AI agent and reuse it across websites, apps, and products with automatic multi-provider failover.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

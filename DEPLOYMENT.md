@@ -1,12 +1,12 @@
 # Deployment (GitHub + Vercel)
 
+This document describes how to deploy Nexus Agent. It does not claim that production verification has been completed.
+
 ## 1. Push to GitHub
 
 ```bash
-git init
 git add .
-git commit -m "feat: nexus agent platform"
-git remote add origin git@github.com:<you>/nexus-agent.git
+git commit -m "feat: implement multi-provider AI gateway and automatic failover"
 git push -u origin main
 ```
 
@@ -21,13 +21,31 @@ Do not commit `.env`, `.env.local`, or real secrets.
 
 `APP_URL` must be the production origin, for example `https://your-app.vercel.app`.
 
+Required for a usable production chat endpoint:
+
+- at least one of `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`
+- `API_KEY_HASH_SECRET`
+- `ADMIN_EMAIL`
+- `APP_URL`
+
+Recommended:
+
+- Supabase trio (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+- `CREDENTIAL_ENCRYPTION_KEY`
+- `SESSION_SECRET`
+
 ## 3. Supabase
 
-Apply `supabase/migrations/0001_init.sql` before the first production request that needs persistence. Confirm:
+Apply both migrations before the first production request that needs persistence:
+
+- `supabase/migrations/0001_init.sql`
+- `supabase/migrations/0002_gateway.sql`
+
+Confirm:
 
 - RLS is enabled on every table
 - `service_role` is only used by the Next.js server
-- anon clients cannot `SELECT` from `api_keys`
+- anon clients cannot `SELECT` from `api_keys` or `provider_credentials`
 
 ## 4. Post-deploy checks
 
@@ -38,9 +56,10 @@ curl https://your-app.vercel.app/api/v1/health
 Then from the dashboard:
 
 1. Sign in as `ADMIN_EMAIL`
-2. Create a project
-3. Generate an API key (copy it once)
-4. Call chat:
+2. Add provider keys under Providers (or rely on env vars)
+3. Create a project
+4. Generate a Nexus API key (copy it once)
+5. Call chat:
 
 ```bash
 curl -X POST https://your-app.vercel.app/api/v1/chat \

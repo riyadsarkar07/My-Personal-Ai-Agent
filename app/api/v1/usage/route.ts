@@ -15,10 +15,15 @@ export async function GET(request: Request) {
         acc.promptTokens += log.prompt_tokens;
         acc.completionTokens += log.completion_tokens;
         acc.errors += log.status === "error" ? 1 : 0;
+        acc.estimatedCostUsd += log.estimated_cost_usd ?? 0;
         return acc;
       },
-      { requests: 0, promptTokens: 0, completionTokens: 0, errors: 0 },
+      { requests: 0, promptTokens: 0, completionTokens: 0, errors: 0, estimatedCostUsd: 0 },
     );
-    return jsonOk({ totals, logs: logs.slice(0, 100) });
+    return jsonOk({
+      totals,
+      costNote: "estimatedCostUsd is a catalog estimate, not actual provider billing.",
+      logs: logs.slice(0, 100),
+    });
   });
 }

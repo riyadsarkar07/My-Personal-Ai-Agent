@@ -1,18 +1,21 @@
-import { getEnv, isGeminiConfigured, isSupabaseConfigured } from "@/lib/env";
+import { configuredProviders, getEnv, isSupabaseConfigured } from "@/lib/env";
 import { Card } from "@/components/ui";
 
 export default function SettingsPage() {
   const env = getEnv();
+  const providers = configuredProviders();
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <h1 className="text-2xl font-semibold">Settings</h1>
       <Card>
         <h2 className="font-medium">Runtime</h2>
         <dl className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted">Gemini</dt>
-            <dd>{isGeminiConfigured() ? "Configured" : "Missing GEMINI_API_KEY"}</dd>
-          </div>
+          {Object.entries(providers).map(([name, ok]) => (
+            <div key={name} className="flex justify-between gap-4">
+              <dt className="text-muted">{name}</dt>
+              <dd>{ok ? "Env key present" : "Not in env (dashboard keys still apply)"}</dd>
+            </div>
+          ))}
           <div className="flex justify-between gap-4">
             <dt className="text-muted">Default model</dt>
             <dd className="font-mono">{env.GEMINI_MODEL}</dd>
@@ -30,8 +33,9 @@ export default function SettingsPage() {
       <Card>
         <h2 className="font-medium">Secrets</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Server-only variables stay on the server. Rotate GEMINI_API_KEY, SUPABASE_SERVICE_ROLE_KEY, and
-          API_KEY_HASH_SECRET in Vercel. Never commit .env files.
+          Server-only variables stay on the server. Rotate provider keys, SUPABASE_SERVICE_ROLE_KEY,
+          CREDENTIAL_ENCRYPTION_KEY, and API_KEY_HASH_SECRET in Vercel. Never commit .env files. Stored provider
+          credentials are AES-256-GCM encrypted and never returned by the API.
         </p>
       </Card>
     </div>

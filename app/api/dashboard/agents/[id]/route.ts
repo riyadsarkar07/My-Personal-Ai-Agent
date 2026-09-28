@@ -19,6 +19,7 @@ export async function PATCH(request: Request, { params }: Params) {
     name: parsed.data.name,
     description: parsed.data.description,
     model: parsed.data.model,
+    fallback_models: parsed.data.fallbackModels,
     system_instruction: parsed.data.systemInstruction,
     temperature: parsed.data.temperature,
     max_tokens: parsed.data.maxTokens,

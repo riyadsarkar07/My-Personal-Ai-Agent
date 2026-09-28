@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { ALL_PERMISSIONS, GEMINI_MODELS } from "./types";
+import { PROVIDER_IDS } from "./ai/catalog";
+import { ALL_PERMISSIONS as KEY_PERMISSIONS } from "./types";
 
 export const chatRequestSchema = z.object({
   message: z.string().min(1).max(32_000),
@@ -11,10 +12,13 @@ export const chatRequestSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
+const modelId = z.string().min(1).max(120);
+
 export const createAgentSchema = z.object({
   name: z.string().min(1).max(80),
   description: z.string().max(500).optional().default(""),
-  model: z.enum(GEMINI_MODELS).optional(),
+  model: modelId.optional(),
+  fallbackModels: z.array(modelId).max(8).optional().default([]),
   systemInstruction: z.string().max(16_000).optional().default("You are a helpful AI agent."),
   temperature: z.number().min(0).max(2).optional().default(0.7),
   maxTokens: z.number().int().min(16).max(8192).optional().default(2048),
@@ -41,8 +45,38 @@ export const updateProjectSchema = createProjectSchema.partial().extend({
 export const createApiKeySchema = z.object({
   name: z.string().min(1).max(80),
   projectId: z.string().min(1).optional(),
-  permissions: z.array(z.enum(ALL_PERMISSIONS)).optional(),
+  permissions: z.array(z.enum(KEY_PERMISSIONS)).optional(),
   expiresAt: z.string().datetime().optional().nullable(),
+});
+
+export const providerCredentialSchema = z.object({
+  provider: z.enum(PROVIDER_IDS),
+  label: z.string().min(1).max(80),
+  apiKey: z.string().min(8).max(512),
+  priority: z.number().int().min(0).max(100).optional(),
+});
+
+export const updateProviderCredentialSchema = z.object({
+  label: z.string().min(1).max(80).optional(),
+  apiKey: z.string().min(8).max(512).optional(),
+  status: z.enum(["active", "disabled", "invalid"]).optional(),
+  priority: z.number().int().min(0).max(100).optional(),
+});
+
+export const routingPolicySchema = z.object({
+  name: z.string().min(1).max(80),
+  projectId: z.string().min(1).optional().nullable(),
+  primaryModel: modelId,
+  fallbackModels: z.array(modelId).max(8).optional().default([]),
+  enabled: z.boolean().optional().default(true),
+});
+
+export const memorySchema = z.object({
+  projectId: z.string().min(1),
+  agentId: z.string().min(1).optional().nullable(),
+  key: z.string().min(1).max(120),
+  content: z.string().min(1).max(8_000),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const loginSchema = z.object({

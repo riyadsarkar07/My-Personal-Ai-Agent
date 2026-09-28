@@ -20,9 +20,12 @@ export default function AnalyticsPage() {
       acc.requests += 1;
       acc.tokens += log.prompt_tokens + log.completion_tokens;
       acc.errors += log.status === "error" ? 1 : 0;
+      acc.estimatedCostUsd += log.estimated_cost_usd ?? 0;
+      const provider = log.provider || "unknown";
+      acc.byProvider[provider] = (acc.byProvider[provider] ?? 0) + 1;
       return acc;
     },
-    { requests: 0, tokens: 0, errors: 0 },
+    { requests: 0, tokens: 0, errors: 0, estimatedCostUsd: 0, byProvider: {} as Record<string, number> },
   );
 
   const chart = logs
@@ -33,7 +36,7 @@ export default function AnalyticsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <h1 className="text-2xl font-semibold">Analytics</h1>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <p className="text-sm text-muted">Requests</p>
           <p className="mt-2 text-3xl font-semibold tabular-nums">{formatNumber(totals.requests)}</p>
@@ -46,7 +49,27 @@ export default function AnalyticsPage() {
           <p className="text-sm text-muted">Errors</p>
           <p className="mt-2 text-3xl font-semibold tabular-nums">{formatNumber(totals.errors)}</p>
         </Card>
+        <Card>
+          <p className="text-sm text-muted">Est. cost (USD)</p>
+          <p className="mt-2 text-3xl font-semibold tabular-nums">{totals.estimatedCostUsd.toFixed(4)}</p>
+          <p className="mt-1 text-xs text-muted">Catalog estimate, not actual billing.</p>
+        </Card>
       </div>
+      <Card>
+        <h2 className="mb-3 text-sm text-muted">Provider usage</h2>
+        <ul className="space-y-2 text-sm">
+          {Object.entries(totals.byProvider).length === 0 ? (
+            <li className="text-muted">No provider traffic yet.</li>
+          ) : (
+            Object.entries(totals.byProvider).map(([provider, count]) => (
+              <li key={provider} className="flex justify-between">
+                <span>{provider}</span>
+                <span className="tabular-nums">{count}</span>
+              </li>
+            ))
+          )}
+        </ul>
+      </Card>
       <Card>
         <h2 className="mb-4 text-sm text-muted">Latency (ms)</h2>
         <div className="h-64">
@@ -69,9 +92,11 @@ export default function AnalyticsPage() {
           <thead className="bg-surface-2 text-muted">
             <tr>
               <th className="px-4 py-3">Time</th>
+              <th className="px-4 py-3">Provider</th>
               <th className="px-4 py-3">Path</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Tokens</th>
+              <th className="px-4 py-3">Est. cost</th>
               <th className="px-4 py-3">Latency</th>
               <th className="px-4 py-3">Error</th>
             </tr>
@@ -80,9 +105,11 @@ export default function AnalyticsPage() {
             {logs.map((log) => (
               <tr key={log.id} className="border-t border-border">
                 <td className="px-4 py-3 text-muted">{new Date(log.created_at).toLocaleString()}</td>
+                <td className="px-4 py-3 font-mono text-xs">{log.provider || log.model}</td>
                 <td className="px-4 py-3 font-mono text-xs">{log.path}</td>
                 <td className="px-4 py-3">{log.status}</td>
                 <td className="px-4 py-3 tabular-nums">{log.prompt_tokens + log.completion_tokens}</td>
+                <td className="px-4 py-3 tabular-nums">${(log.estimated_cost_usd ?? 0).toFixed(4)}</td>
                 <td className="px-4 py-3 tabular-nums">{log.latency_ms} ms</td>
                 <td className="px-4 py-3 text-destructive">{log.error}</td>
               </tr>

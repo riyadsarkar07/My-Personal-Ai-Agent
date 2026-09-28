@@ -23,8 +23,10 @@ const response = await agent.chat({
   message: "Hello, how can you help me?",
 });
 
-console.log(response.message);
+console.log(response.message, response.model, response.provider);
 ```
+
+Nexus selects the model and provider. The SDK always talks to `/api/v1` with a single Nexus API key.
 
 ## Streaming
 
@@ -38,6 +40,15 @@ await agent.stream(
 );
 ```
 
+## Models, usage, memory
+
+```ts
+await agent.listModels();
+await agent.usage();
+await agent.upsertMemory({ key: "preferred_name", content: "Alex" });
+await agent.listMemories({ q: "preferred" });
+```
+
 ## Frontend applications
 
 Never put `AGENT_API_KEY` in a browser bundle.
@@ -45,7 +56,6 @@ Never put `AGENT_API_KEY` in a browser bundle.
 Use the included proxy pattern:
 
 ```ts
-// app/api/proxy/chat/route.ts on YOUR website
 import { UniversalAgent } from "@nexus/agent-sdk";
 
 const agent = new UniversalAgent({

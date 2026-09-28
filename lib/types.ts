@@ -1,3 +1,5 @@
+import { GEMINI_MODELS as CATALOG_GEMINI_MODELS } from "./ai/catalog";
+
 export type UserRole = "owner" | "admin" | "member";
 export type ProjectStatus = "active" | "archived";
 export type AgentStatus = "active" | "disabled";
@@ -5,6 +7,9 @@ export type ApiKeyStatus = "active" | "revoked";
 export type MessageRole = "user" | "assistant" | "system" | "tool";
 export type MembershipRole = "owner" | "admin" | "developer" | "viewer";
 export type ToolExecutionMode = "sandbox" | "deny";
+export type ProviderId = "gemini" | "openai" | "anthropic" | "groq" | "openrouter";
+export type CredentialStatus = "active" | "disabled" | "invalid";
+export type MemoryScope = "project" | "agent";
 
 export interface Profile {
   id: string;
@@ -45,6 +50,7 @@ export interface Agent {
   name: string;
   description: string;
   model: string;
+  fallback_models: string[];
   system_instruction: string;
   temperature: number;
   max_tokens: number;
@@ -105,13 +111,65 @@ export interface UsageLog {
   api_key_id: string | null;
   conversation_id: string | null;
   model: string;
+  provider: string;
   prompt_tokens: number;
   completion_tokens: number;
+  estimated_cost_usd: number;
   latency_ms: number;
   status: "success" | "error" | "rate_limited" | "unauthorized";
   error: string | null;
   path: string;
   created_at: string;
+}
+
+export interface ProviderCredential {
+  id: string;
+  provider: ProviderId;
+  label: string;
+  key_prefix: string;
+  key_ciphertext: string;
+  status: CredentialStatus;
+  last_validated_at: string | null;
+  last_error: string | null;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RoutingPolicy {
+  id: string;
+  project_id: string | null;
+  name: string;
+  primary_model: string;
+  fallback_models: string[];
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FailoverLog {
+  id: string;
+  project_id: string | null;
+  agent_id: string | null;
+  provider: string;
+  model: string;
+  status: "success" | "error" | "skipped";
+  error_code: string | null;
+  error: string | null;
+  latency_ms: number;
+  retryable: boolean;
+  created_at: string;
+}
+
+export interface MemoryRecord {
+  id: string;
+  project_id: string;
+  agent_id: string | null;
+  key: string;
+  content: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuditLog {
@@ -131,14 +189,7 @@ export interface SessionPayload {
   role: UserRole;
 }
 
-export const GEMINI_MODELS = [
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-2.5-flash",
-  "gemini-2.5-pro",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
-] as const;
+export const GEMINI_MODELS = CATALOG_GEMINI_MODELS;
 
 export type GeminiModel = (typeof GEMINI_MODELS)[number];
 

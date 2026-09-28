@@ -15,6 +15,9 @@ import {
   Menu,
   X,
   LogOut,
+  Server,
+  Brain,
+  Route,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -27,6 +30,9 @@ const NAV = [
   { href: "/dashboard/keys", label: "API Keys", icon: KeyRound },
   { href: "/dashboard/conversations", label: "Conversations", icon: MessageSquare },
   { href: "/dashboard/analytics", label: "Analytics", icon: Activity },
+  { href: "/dashboard/providers", label: "Providers", icon: Server },
+  { href: "/dashboard/routing", label: "Routing", icon: Route },
+  { href: "/dashboard/memory", label: "Memory", icon: Brain },
   { href: "/dashboard/docs", label: "Documentation", icon: BookOpen },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

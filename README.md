@@ -1,6 +1,6 @@
 # Nexus Agent
 
-Universal Gemini-powered AI Agent Platform. Create an agent once and reuse it across websites, mobile apps, and internal tools through a versioned REST API.
+Multi-provider AI Agent Platform. Create an agent once and reuse it across websites, mobile apps, and internal tools through a versioned REST API with automatic model failover.
 
 ## Architecture
 
@@ -14,12 +14,13 @@ Browser / Mobile / Server
   /api/v1/*           hashed API key auth
   /api/dashboard/*    dashboard session auth
         |
-        +-- Gemini engine (@google/genai, server-only)
+        +-- AI gateway (Gemini, OpenAI, Anthropic, Groq, OpenRouter)
+        +-- Automatic failover + cooldowns
         +-- Rate limiter + Zod validation
         +-- Supabase Postgres (or in-memory fallback)
 ```
 
-Project isolation is enforced at every read and write: API keys, agents, conversations, and usage logs are scoped to `project_id`.
+Project isolation is enforced at every read and write: API keys, agents, conversations, memories, and usage logs are scoped to `project_id`.
 
 ## Folder structure
 
@@ -32,7 +33,7 @@ app/
   login/ register/        Auth pages
 components/               Shared UI
 lib/
-  ai/                     Gemini engine, tools, chat orchestration
+  ai/                     Gateway, adapters, failover, tools
   supabase/               Clients
   store.ts                Data access (Supabase + memory fallback)
   api-auth.ts             API key auth + rate limits
@@ -43,11 +44,11 @@ tests/                    Unit tests
 
 ## Quick start
 
-1. Copy `.env.example` to `.env.local` and fill in Gemini + (optionally) Supabase values.
+1. Copy `.env.example` to `.env.local` and fill in at least one provider key plus (optionally) Supabase values.
 2. `npm install`
 3. `npm run dev`
 4. Sign in with `ADMIN_EMAIL` and password `ChangeMe123!` (change it immediately).
-5. Create a project, generate an API key, and call `POST /api/v1/chat`.
+5. Create a project, generate a Nexus API key, and call `POST /api/v1/chat`.
 
 Without Supabase credentials the platform runs on a process-local store so you can develop the API and dashboard immediately. Use Supabase for production.
 

@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { Badge, Button, Card, Input, Label, Textarea } from "@/components/ui";
-import { GEMINI_MODELS, type Agent, type Project } from "@/lib/types";
+import { CATALOG_MODELS } from "@/lib/ai/catalog";
+import type { Agent, Project } from "@/lib/types";
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -36,6 +37,10 @@ export default function AgentsPage() {
       description: form.get("description"),
       projectId: form.get("projectId"),
       model: form.get("model"),
+      fallbackModels: String(form.get("fallbackModels") || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       systemInstruction: form.get("systemInstruction"),
       temperature: Number(form.get("temperature")),
       maxTokens: Number(form.get("maxTokens")),
@@ -85,19 +90,27 @@ export default function AgentsPage() {
             </select>
           </div>
           <div className="mt-3">
-            <Label htmlFor="model">Gemini model</Label>
+            <Label htmlFor="model">Primary model</Label>
             <select
               id="model"
               name="model"
               defaultValue={editing?.model ?? "gemini-2.0-flash"}
               className="min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm"
             >
-              {GEMINI_MODELS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
+              {CATALOG_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.displayName} ({m.provider})
                 </option>
               ))}
             </select>
+          </div>
+          <div className="mt-3">
+            <Label htmlFor="fallbackModels">Fallback models (comma separated)</Label>
+            <Input
+              id="fallbackModels"
+              name="fallbackModels"
+              defaultValue={editing?.fallback_models?.join(", ") ?? "gpt-4o-mini, claude-3-5-haiku-20241022"}
+            />
           </div>
           <div className="mt-3">
             <Label htmlFor="systemInstruction">System instruction</Label>

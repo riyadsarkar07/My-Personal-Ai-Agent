@@ -12,7 +12,10 @@ export default function DocsPage() {
   "message": "Hello",
   "agentId": "agt_...",
   "conversationId": "cnv_..."
-}`}</pre>
+}
+
+GET /api/v1/models
+GET /api/v1/memories`}</pre>
       </section>
       <section className="rounded-xl border border-border bg-surface p-5">
         <h2 className="font-medium">SDK</h2>

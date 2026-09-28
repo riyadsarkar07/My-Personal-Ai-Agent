@@ -30,6 +30,19 @@ test("chat sends bearer token and returns typed payload", async () => {
   assert.equal(response.conversationId, "cnv_1");
 });
 
+test("listModels hits /models", async () => {
+  const agent = new UniversalAgent({
+    baseURL: "https://example.test/api/v1",
+    apiKey: "uag_live_testkey",
+    fetch: async (input) => {
+      assert.equal(String(input), "https://example.test/api/v1/models");
+      return new Response(JSON.stringify({ data: [{ id: "gpt-4o-mini", provider: "openai" }] }), { status: 200 });
+    },
+  });
+  const models = await agent.listModels();
+  assert.equal((models as { id: string }[])[0].id, "gpt-4o-mini");
+});
+
 test("unauthorized responses become AgentSDKError", async () => {
   const agent = new UniversalAgent({
     baseURL: "https://example.test/api/v1",

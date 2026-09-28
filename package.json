@@ -2,14 +2,14 @@
   "name": "nexus-agent-platform",
   "version": "1.0.0",
   "private": true,
-  "description": "Universal Gemini-powered AI Agent Platform with a secure REST API",
+  "description": "Multi-provider AI Agent Platform with automatic failover and a secure REST API",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port 3000",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts packages/agent-sdk/src/index.test.ts"
+    "test": "tsx --test tests/*.test.ts tests/**/*.test.ts packages/agent-sdk/src/index.test.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

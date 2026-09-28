@@ -28,6 +28,10 @@ export async function POST(request: Request) {
       agentId: agent.id,
       message: result.text,
       model: result.model,
+      provider: result.provider ?? null,
+      failover: result.failover ?? [],
+      estimatedCostUsd: result.estimatedCostUsd ?? 0,
+      costNote: "estimatedCostUsd is a catalog estimate, not provider billing.",
       usage: {
         promptTokens: result.promptTokens,
         completionTokens: result.completionTokens,

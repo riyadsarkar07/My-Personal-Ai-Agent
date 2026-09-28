@@ -7,7 +7,7 @@ test("chat schema requires a message", () => {
   assert.equal(chatRequestSchema.safeParse({ message: "hello" }).success, true);
 });
 
-test("agent schema rejects unknown models", () => {
-  const parsed = createAgentSchema.safeParse({ name: "bot", model: "gpt-4o" });
-  assert.equal(parsed.success, false);
+test("agent schema accepts multi-provider models", () => {
+  const parsed = createAgentSchema.safeParse({ name: "bot", model: "gpt-4o", fallbackModels: ["claude-3-5-haiku-20241022"] });
+  assert.equal(parsed.success, true);
 });

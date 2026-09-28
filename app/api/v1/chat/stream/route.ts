@@ -47,6 +47,9 @@ export async function POST(request: Request) {
         send("done", {
           conversationId: conversation.id,
           message: result.text,
+          model: result.model,
+          provider: result.provider ?? null,
+          estimatedCostUsd: result.estimatedCostUsd ?? 0,
           usage: { promptTokens: result.promptTokens, completionTokens: result.completionTokens },
         });
       } catch (error) {

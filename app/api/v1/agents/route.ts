@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       name: body.name,
       description: body.description,
       model: body.model ?? getEnv().GEMINI_MODEL,
+      fallback_models: body.fallbackModels ?? [],
       system_instruction: body.systemInstruction,
       temperature: body.temperature,
       max_tokens: body.maxTokens,

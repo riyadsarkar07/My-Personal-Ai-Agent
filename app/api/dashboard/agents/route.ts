@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     name: parsed.data.name,
     description: parsed.data.description,
     model: parsed.data.model ?? getEnv().GEMINI_MODEL,
+    fallback_models: parsed.data.fallbackModels ?? [],
     system_instruction: parsed.data.systemInstruction,
     temperature: parsed.data.temperature,
     max_tokens: parsed.data.maxTokens,

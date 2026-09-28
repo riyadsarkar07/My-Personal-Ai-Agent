@@ -1,4 +1,4 @@
-import { isGeminiConfigured, isSupabaseConfigured } from "@/lib/env";
+import { configuredProviders, isSupabaseConfigured } from "@/lib/env";
 import { seedDefaults } from "@/lib/store";
 
 export async function GET() {
@@ -8,7 +8,8 @@ export async function GET() {
       status: "ok",
       version: "v1",
       timestamp: new Date().toISOString(),
-      gemini: isGeminiConfigured() ? "configured" : "missing",
+      providers: configuredProviders(),
+      gemini: configuredProviders().gemini ? "configured" : "missing",
       database: isSupabaseConfigured() ? "supabase" : "memory",
     },
   });

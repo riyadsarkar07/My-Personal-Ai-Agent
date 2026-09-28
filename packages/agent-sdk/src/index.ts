@@ -29,6 +29,9 @@ export interface ChatResponse {
   agentId: string;
   message: string;
   model: string;
+  provider?: string | null;
+  estimatedCostUsd?: number;
+  failover?: unknown[];
   usage: { promptTokens: number; completionTokens: number };
 }
 
@@ -183,6 +186,26 @@ export class UniversalAgent {
 
   usage() {
     return this.request("/usage");
+  }
+
+  listModels() {
+    return this.request("/models");
+  }
+
+  listMemories(query?: { agentId?: string; q?: string }) {
+    const params = new URLSearchParams();
+    if (query?.agentId) params.set("agentId", query.agentId);
+    if (query?.q) params.set("q", query.q);
+    const suffix = params.toString() ? `?${params}` : "";
+    return this.request(`/memories${suffix}`);
+  }
+
+  upsertMemory(body: { key: string; content: string; agentId?: string | null; metadata?: Record<string, unknown> }) {
+    return this.request("/memories", { method: "POST", body: JSON.stringify(body) });
+  }
+
+  deleteMemory(id: string) {
+    return this.request(`/memories/${id}`, { method: "DELETE" });
   }
 
   health() {
